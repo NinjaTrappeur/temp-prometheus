@@ -32,9 +32,10 @@ fn main() -> std::io::Result<()> {
 
     let thread_metrics = metrics.clone();
     thread::spawn(move || {
+        let filepath = prometheus_file_path.to_owned();
         loop {
             {
-                match File::create(prometheus_file_path.to_owned()) {
+                match File::create(&filepath) {
                     Ok(mut file) => {
                         if let Ok(m) = thread_metrics.lock() {
                             let prom_str = format!("officetemp_humidity {}\nofficetemp_temperature {}\n", m.humidity, m.temperature);
