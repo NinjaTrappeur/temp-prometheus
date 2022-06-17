@@ -33,19 +33,20 @@ fn main() -> std::io::Result<()> {
     let thread_metrics = metrics.clone();
     thread::spawn(move || {
         let filepath = prometheus_file_path.to_owned();
+        let mut prom_str: String = "".to_owned();
         loop {
             {
                 match File::create(&filepath) {
                     Ok(mut file) => {
                         if let Ok(m) = thread_metrics.lock() {
-                            let prom_str = format!("officetemp_humidity {}\nofficetemp_temperature {}\n", m.humidity, m.temperature);
-                            match file.write_all(prom_str.as_bytes()) {
-                                Ok(()) => (),
-                                Err(err) => {
-                                    eprintln!("Cannot write to {}: {}", prometheus_file_path, err);
-                                }
-                            };
+                            prom_str = format!("officetemp_humidity {}\nofficetemp_temperature {}\n", m.humidity, m.temperature);
                         }
+                        match file.write_all((&prom_str).as_bytes()) {
+                            Ok(()) => (),
+                            Err(err) => {
+                                eprintln!("Cannot write to {}: {}", prometheus_file_path, err);
+                            }
+                        };
                     },
                     Err(err) => {
                         eprintln!("Cannot write to {}: {}", prometheus_file_path, err);
